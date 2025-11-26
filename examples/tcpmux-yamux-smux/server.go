@@ -26,6 +26,22 @@ type Session struct {
 	factory MuxFactory
 }
 
+// RemoteAddr 返回远程地址
+func (s *Session) RemoteAddr() net.Addr {
+	if s.conn != nil {
+		return s.conn.RemoteAddr()
+	}
+	return nil
+}
+
+// LocalAddr 返回本地地址
+func (s *Session) LocalAddr() net.Addr {
+	if s.conn != nil {
+		return s.conn.LocalAddr()
+	}
+	return nil
+}
+
 // NewServer 创建新的服务器
 func NewServer(addr string, muxType MuxType) (*Server, error) {
 	if !muxType.IsValid() {
@@ -127,6 +143,51 @@ func (s *Server) handleSession(session *Session) {
 	}
 
 	log.Printf("会话关闭: %s", session.conn.RemoteAddr())
+}
+
+// GetSessions 获取所有活跃的会话（用于服务端主动打开流）
+func (s *Server) GetSessions() []*Session {
+	s.sessionsMu.RLock()
+	defer s.sessionsMu.RUnlock()
+
+	sessions := make([]*Session, 0, len(s.sessions))
+	for session := range s.sessions {
+		// 只返回未关闭的会话
+		if !session.session.IsClosed() {
+			sessions = append(sessions, session)
+		}
+	}
+	return sessions
+}
+
+// OpenStreamOnSession 在指定会话上打开新流（服务端主动发起）
+func (s *Server) OpenStreamOnSession(session *Session) (net.Conn, error) {
+	if session == nil {
+		return nil, fmt.Errorf("session is nil")
+	}
+
+	s.sessionsMu.RLock()
+	exists := s.sessions[session]
+	s.sessionsMu.RUnlock()
+
+	if !exists {
+		return nil, fmt.Errorf("session not found")
+	}
+
+	if session.session.IsClosed() {
+		return nil, fmt.Errorf("session is closed")
+	}
+
+	return session.session.OpenStream()
+}
+
+// GetFirstAvailableSession 获取第一个可用的会话（用于代理服务）
+func (s *Server) GetFirstAvailableSession() *Session {
+	sessions := s.GetSessions()
+	if len(sessions) == 0 {
+		return nil
+	}
+	return sessions[0]
 }
 
 // Close 关闭服务器
