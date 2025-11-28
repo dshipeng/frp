@@ -1,0 +1,29 @@
+# frp 客户端配置文件
+# 启用 TCPMux，配置 TCP 代理将本地代理服务暴露到服务端
+
+serverAddr = "127.0.0.1"  # 修改为你的 frps 服务器地址
+serverPort = 7000
+
+# 启用 TCP 流多路复用（必须与服务端一致）
+transport.tcpMux = true
+transport.tcpMuxKeepaliveInterval = 30
+
+# 连接池配置
+transport.poolCount = 5
+
+# 认证配置（必须与服务端一致）
+auth.method = "token"
+auth.token = "your_secret_token_here"
+
+# 日志配置
+log.to = "console"
+log.level = "info"
+log.disablePrintColor = false
+
+# 配置 TCP 代理，将本地代理服务暴露到服务端
+[[proxies]]
+name = "proxy-server"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 8080  # 本地代理服务器监听端口
+remotePort = 8888  # 服务端暴露的端口

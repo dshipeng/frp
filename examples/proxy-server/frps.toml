@@ -1,0 +1,27 @@
+# frp 服务端配置文件
+# 启用 TCPMux 实现 TCP 流多路复用
+
+bindAddr = "0.0.0.0"
+bindPort = 7000
+
+# 启用 TCP 流多路复用
+transport.tcpMux = true
+transport.tcpMuxKeepaliveInterval = 30
+
+# 连接池配置
+transport.maxPoolCount = 10
+
+# 认证配置
+auth.method = "token"
+auth.token = "your_secret_token_here"
+
+# 日志配置
+log.to = "console"
+log.level = "info"
+log.disablePrintColor = false
+
+# Web 管理界面（可选）
+webServer.addr = "127.0.0.1"
+webServer.port = 7500
+webServer.user = "admin"
+webServer.password = "admin"

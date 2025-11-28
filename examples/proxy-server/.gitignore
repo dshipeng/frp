@@ -1,0 +1,10 @@
+# 编译产物
+proxy_agent
+proxy_agent.exe
+
+# 日志文件
+*.log
+
+# 配置文件（包含敏感信息）
+# frps.toml
+# frpc.toml
